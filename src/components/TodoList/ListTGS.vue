@@ -52,13 +52,15 @@
 
                 <template v-slot:[`item.actions`]="{ item }">                                   
                     <v-btn small class="mr-2" @click="editItem(item)">
-                        <!-- <v-icon color="blue">mdi-pencil</v-icon> -->
-                        Edit
+                        <v-icon color="blue">mdi-pencil</v-icon>                        
                     </v-btn>
                     <v-btn small @click="deleteItem(item)">
-                        <!-- <v-icon color="red">mdi-delete</v-icon> -->
-                        Delete
+                        <v-icon color="red">mdi-delete</v-icon>                        
                     </v-btn>
+                </template>
+
+                <template v-slot:[`item.check`]="{ item }">                                   
+                    <v-checkbox multiple :key="item" @click.capture.stop="itemCheck(item)"/>  
                 </template>
 
             </v-data-table>
@@ -124,6 +126,20 @@
             </v-card>
         </v-dialog>
 
+        <v-card v-if="checkTemp.length" class="mt-3 text-left">
+            <v-card-title>Delete Multiple</v-card-title>
+            <v-card-text>
+                <v-list-item v-for="(item, index) in checkTemp" :key="index">                                            
+                        <li>{{item.task}}</li>                 
+                </v-list-item>
+            </v-card-text>
+            <v-card-action class="ml-5">
+                <v-btn color="error" dark @click="deleteChecked">
+                    Hapus Semua
+                </v-btn>     
+            </v-card-action>                                  
+        </v-card>
+
     </v-main>
 </template>
 
@@ -141,6 +157,7 @@
                 expanded: [],
                 singleExpand: true,
                 sorting: null,
+                checkTemp: [],
                 headers: [
                     {
                         text: "Task",
@@ -150,6 +167,7 @@
                     },
                     { text: "Priority", value: "priority" },                                
                     { text: "Actions", value: "actions" },
+                    { text: "", value: "check" },
                 ],
 
                 todos: [
@@ -171,12 +189,6 @@
                 ],
 
                 formTodo: {
-                    task: null,
-                    priority: null,
-                    note: null,
-                },
-
-                detail: {
                     task: null,
                     priority: null,
                     note: null,
@@ -244,26 +256,33 @@
                             return -1;                     
                         if (x.priority == "Penting")
                             return 1;                                           
-                        if (x.priority == "Biasa" && y.priority=="Tidak penting")
-                            return 1;                       
-                        if (x.priority == "Biasa" && y.priority=="Penting")
-                            return 0;                                                                                                    
+                        if (x.priority == "Biasa")
+                            return 0;                                               
                       }
                       if(sorting == "Penting"){
                         if (x.priority == "Penting")
                             return -1;
                         if (x.priority == "Tidak penting")
                             return 1;                                       
-                        if (x.priority == "Biasa" && y.priority=="Penting")
-                            return 1;                       
-                        if (x.priority == "Biasa" && y.priority=="Tidak penting")
-                            return 0;
+                        if (x.priority == "Biasa")
+                            return 0;                                               
                       }                                            
                 }
-                
-                return this.todos.sort(compare);                
-            }
-            
+                return this.todos.sort(compare);
+            },
+            itemCheck(item){
+                if(this.checkTemp.includes(item)) {
+                    this.checkTemp.splice(this.checkTemp.indexOf(item), 1);
+                } else {
+                    this.checkTemp.push(item);                
+                }
+            },
+            deleteChecked: function(){             
+                for(var i = 0; i < this.checkTemp.length; i++){            
+                    this.todos.splice( this.todos.indexOf(this.checkTemp[i]), 1);
+                }
+                this.checkTemp=[];                            
+            },
         },
     };
 </script>
